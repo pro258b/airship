@@ -1,0 +1,52 @@
+{
+  "title": "Airship Freedom",
+  "header": {
+    "freedomCoins": "₿",
+    "freedomCoefficient": "x"
+  },
+  "calculator": {
+    "conventionalLife": "Conventional Life",
+    "airshipFreedomLife": "Airship Freedom Life",
+    "monthlyRent": "Monthly Rent:",
+    "monthlyFood": "Monthly Food:",
+    "monthlyTransport": "Monthly Transport:",
+    "monthlyMisc": "Monthly Misc:",
+    "month": "/month",
+    "vs": "VS",
+    "save": "Save",
+    "cost": "Cost",
+    "more": "/month more"
+  },
+  "freedom": {
+    "timeToUltimateFreedom": "Time to Ultimate Freedom",
+    "oneYear": "1 Year:",
+    "fiveYears": "5 Years:",
+    "saved": "saved",
+    "inBitcoin": "In Bitcoin:"
+  },
+  "map": {
+    "globalArbitrageOpportunities": "Global Fun Sites &Opportunities"
+  },
+  "fleet": {
+    "yourAirshipFleet": "Your Airship Fleet",
+    "soloExplorer": "Solo Explorer",
+    "freedomCruiser": "Freedom Cruiser",
+    "worldExplorer": "World Explorer"
+  },
+  "locations": {
+    "thailand": "Thailand",
+    "portugal": "Portugal", 
+    "mexico": "Mexico",
+    "vietnam": "Vietnam",
+    "guatemala": "Guatemala"
+  },
+  "achievements": {
+    "freedomMilestone": "🏆 Freedom Milestone: 1 Bitcoin!",
+    "ultimateArbitrage": "🎯 Ultimate Arbitrage: 5x Freedom Coefficient!",
+    "highRoller": "💰 High Roller: $5000+ monthly savings!",
+    "bonusBitcoin": "🎈 Bonus Bitcoin earned! Freedom multiplied!"
+  },
+  "language": {
+    "switchLanguage": "Language"
+  }
+}

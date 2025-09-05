@@ -1,0 +1,52 @@
+{
+  "title": "飞艇自由",
+  "header": {
+    "freedomCoins": "₿",
+    "freedomCoefficient": "倍"
+  },
+  "calculator": {
+    "conventionalLife": "传统生活",
+    "airshipFreedomLife": "飞艇自由生活",
+    "monthlyRent": "月租金：",
+    "monthlyFood": "月食物：",
+    "monthlyTransport": "月交通：",
+    "monthlyMisc": "月杂费：",
+    "month": "/月",
+    "vs": "对比",
+    "save": "节省",
+    "cost": "成本",
+    "more": "/月更多"
+  },
+  "freedom": {
+    "timeToUltimateFreedom": "实现终极自由的时间",
+    "oneYear": "1年：",
+    "fiveYears": "5年：",
+    "saved": "已节省",
+    "inBitcoin": "比特币等值："
+  },
+  "map": {
+    "globalArbitrageOpportunities": "全球探索"
+  },
+  "fleet": {
+    "yourAirshipFleet": "你的飞艇舰队",
+    "soloExplorer": "独行探索者",
+    "freedomCruiser": "自由巡航者",
+    "worldExplorer": "世界探险家"
+  },
+  "locations": {
+    "thailand": "泰国",
+    "portugal": "葡萄牙", 
+    "mexico": "墨西哥",
+    "vietnam": "越南",
+    "guatemala": "危地马拉"
+  },
+  "achievements": {
+    "freedomMilestone": "🏆 自由里程碑：1个比特币！",
+    "ultimateArbitrage": "🎯 终极套利：5倍自由系数！",
+    "highRoller": "💰 大户：月节省$5000+！",
+    "bonusBitcoin": "🎈 获得奖励比特币！自由倍增！"
+  },
+  "language": {
+    "switchLanguage": "语言"
+  }
+}

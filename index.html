@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Airship Freedom Economics</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="game-container">
+        <header class="header">
+            <div class="airship-status">
+                <div class="airship-icon" id="airshipIcon">
+                    <img src="resources/airship.jpg" alt="Airship" />
+                </div>
+                <div class="freedom-coins" id="freedomCoins">₿ 0.1</div>
+                <div class="freedom-coefficient" id="freedomCoeff">1.0x</div>
+            </div>
+            <h1 data-i18n="title">Airship Freedom Economics</h1>
+            <div class="language-switcher">
+                <select id="languageSelect">
+                    <option value="en">English</option>
+                    <option value="zh">中文</option>
+                </select>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <section class="calculator-section">
+                <div class="lifestyle-comparison">
+                    <div class="current-life">
+                        <h3 data-i18n="calculator.conventionalLife">Conventional Life</h3>
+                        <div class="cost-input">
+                            <label><span data-i18n="calculator.monthlyRent">Monthly Rent:</span> $<input type="number" id="currentRent" value="3000"></label>
+                            <label><span data-i18n="calculator.monthlyFood">Monthly Food:</span> $<input type="number" id="currentFood" value="800"></label>
+                            <label><span data-i18n="calculator.monthlyTransport">Monthly Transport:</span> $<input type="number" id="currentTransport" value="400"></label>
+                            <label><span data-i18n="calculator.monthlyMisc">Monthly Misc:</span> $<input type="number" id="currentMisc" value="1000"></label>
+                        </div>
+                        <div class="total-cost" id="currentTotal">$5,200<span data-i18n="calculator.month">/month</span></div>
+                    </div>
+
+                    <div class="vs-divider" data-i18n="calculator.vs">VS</div>
+
+                    <div class="freedom-life">
+                        <h3 data-i18n="calculator.airshipFreedomLife">Airship Freedom Life</h3>
+                        <div class="location-selector">
+                            <select id="locationSelect">
+                                <option value="thailand" data-i18n-template="locations.thailand">Thailand - $800/month</option>
+                                <option value="portugal" data-i18n-template="locations.portugal">Portugal - $1200/month</option>
+                                <option value="mexico" data-i18n-template="locations.mexico">Mexico - $900/month</option>
+                                <option value="vietnam" data-i18n-template="locations.vietnam">Vietnam - $600/month</option>
+                                <option value="guatemala" data-i18n-template="locations.guatemala">Guatemala - $700/month</option>
+                            </select>
+                        </div>
+                        <div class="freedom-cost" id="freedomTotal">$800<span data-i18n="calculator.month">/month</span></div>
+                        <div class="savings" id="monthlySavings"><span data-i18n="calculator.save">Save</span> $4,400<span data-i18n="calculator.month">/month</span>!</div>
+                    </div>
+                </div>
+
+                <div class="freedom-calculator">
+                    <div class="time-freedom">
+                        <h4 data-i18n="freedom.timeToUltimateFreedom">Time to Ultimate Freedom</h4>
+                        <div class="freedom-timeline" id="freedomTimeline">
+                            <div class="timeline-item">
+                                <span data-i18n="freedom.oneYear">1 Year:</span> <span id="yearSavings">$52,800 <span data-i18n="freedom.saved">saved</span></span>
+                            </div>
+                            <div class="timeline-item">
+                                <span data-i18n="freedom.fiveYears">5 Years:</span> <span id="fiveYearSavings">$264,000 <span data-i18n="freedom.saved">saved</span></span>
+                            </div>
+                            <div class="timeline-item bitcoin">
+                                <span data-i18n="freedom.inBitcoin">In Bitcoin:</span> <span id="bitcoinEquivalent">₿ 5.28</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="world-map-section">
+                <h3 data-i18n="map.globalArbitrageOpportunities">Global Arbitrage Opportunities</h3>
+                <div class="map-container" id="worldMap">
+                    <div class="location-marker thailand" data-location="thailand">
+                        <span class="marker">📍</span>
+                        <span class="savings-indicator">+$4,400</span>
+                    </div>
+                    <div class="location-marker portugal" data-location="portugal">
+                        <span class="marker">📍</span>
+                        <span class="savings-indicator">+$4,000</span>
+                    </div>
+                    <div class="location-marker mexico" data-location="mexico">
+                        <span class="marker">📍</span>
+                        <span class="savings-indicator">+$4,300</span>
+                    </div>
+                    <div class="location-marker vietnam" data-location="vietnam">
+                        <span class="marker">📍</span>
+                        <span class="savings-indicator">+$4,600</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="airship-progression">
+                <h3 data-i18n="fleet.yourAirshipFleet">Your Airship Fleet</h3>
+                <div class="fleet-display" id="fleetDisplay">
+                    <div class="airship-tier tier-1 active">
+                        <div class="airship-visual">🎈</div>
+                        <div class="tier-info">
+                            <h4 data-i18n="fleet.soloExplorer">Solo Explorer</h4>
+                            <p>₿ 0.1 - 1.0</p>
+                        </div>
+                    </div>
+                    <div class="airship-tier tier-2">
+                        <div class="airship-visual">🚁</div>
+                        <div class="tier-info">
+                            <h4 data-i18n="fleet.freedomCruiser">Freedom Cruiser</h4>
+                            <p>₿ 1.0 - 5.0</p>
+                        </div>
+                    </div>
+                    <div class="airship-tier tier-3">
+                        <div class="airship-visual">✈️</div>
+                        <div class="tier-info">
+                            <h4 data-i18n="fleet.worldExplorer">World Explorer</h4>
+                            <p>₿ 5.0 - 10.0</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
