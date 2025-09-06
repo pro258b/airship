@@ -74,6 +74,29 @@ h1 {
     text-align: center;
 }
 
+/* Header Controls */
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.design-link {
+    color: #4caf50;
+    text-decoration: none;
+    padding: 8px 15px;
+    border: 1px solid rgba(76, 175, 80, 0.5);
+    border-radius: 5px;
+    transition: all 0.3s ease;
+    font-weight: bold;
+}
+
+.design-link:hover {
+    background: rgba(76, 175, 80, 0.2);
+    border-color: #4caf50;
+    transform: translateY(-2px);
+}
+
 /* Language Switcher */
 .language-switcher select {
     background: rgba(255, 255, 255, 0.1);

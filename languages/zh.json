@@ -48,5 +48,8 @@
   },
   "language": {
     "switchLanguage": "语言"
+  },
+  "design": {
+    "link": "设计"
   }
 }
