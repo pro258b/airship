@@ -1,0 +1,75 @@
+{
+  "balloons": [
+    {
+      "id": "personal",
+      "price_from": 3000,
+      "capacity": "1-2 person",
+      "features": ["basic_nav", "local_exploration"],
+      "i18n_key": "balloons.personal",
+      "links": [
+
+        {
+          "type": "marketplace",
+          "name": "Balloon Classifieds",
+          "url": "https://balloonlife.com/classifieds",
+          "region": "USA"
+        },
+
+        {
+          "type": "used",
+          "name": "Balloon envelop only, 83 hours, $2800",
+          "url": "https://www.facebook.com/groups/balloonswap/",
+          "region": "US"
+        }
+      ]
+    },
+    {
+      "id": "freedom_cruiser",
+      "price_from": 15000,
+      "capacity": "2-4 person",
+      "features": ["extended_range", "basic_amenities", "gps"],
+      "i18n_key": "balloons.cruiser",
+      "links": [
+        {
+          "type": "Used airship $14000",
+          "name": "Adams AS-60",
+          "url": "https://www.facebook.com/commerce/listing/1520151432670027",
+          "region": "US"
+        }
+      ]
+    },
+    {
+      "id": "world_explorer",
+      "price_from": 50000,
+      "capacity": "4-6 person",
+      "features": ["long_range", "full_quarters", "advanced_nav", "solar_power"],
+      "i18n_key": "balloons.explorer",
+      "links": [
+        {
+          "type": "manufacturer",
+          "name": "Goodyear Airships",
+          "url": "https://goodyear.com/en-US/about/airships",
+          "region": "USA"
+        },
+	{
+          "type": "dealer",
+          "name": "Hybrid Air Vehicles",
+          "url": "https://hybridairvehicles.com",
+          "region": "UK"
+        },
+        {
+          "type": "kit_supplier",
+          "name": "Solar Ship Inc",
+          "url": "https://solarship.com",
+          "region": "Canada"
+        },
+        {
+          "type": "marketplace",
+          "name": "Airship Heritage Trust",
+          "url": "https://airshipsonline.com",
+          "region": "International"
+        }
+      ]
+    }
+  ]
+}

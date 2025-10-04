@@ -1,0 +1,16 @@
+dependencies:
+  - OpenZeppelin/openzeppelin-contracts@4.9.3
+  - OpenZeppelin/openzeppelin-contracts-upgradeable@4.9.3
+
+compiler:
+  solc:
+    version: 0.8.20
+    optimizer:
+      enabled: true
+      runs: 200
+    via_ir: true
+    settings:
+      viaIR: true
+    remappings:
+      - '@openzeppelin/contracts=OpenZeppelin/openzeppelin-contracts@4.9.3/contracts'
+      - '@openzeppelin/contracts-upgradeable=OpenZeppelin/openzeppelin-contracts-upgradeable@4.9.3/contracts'

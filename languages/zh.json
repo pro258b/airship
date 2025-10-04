@@ -51,5 +51,40 @@
   },
   "design": {
     "link": "设计"
+  },
+  "resource": {
+    "link": "获得真正的气球 (从$3000起)"
+  },
+  "balloons": {
+    "personal": {
+      "title": "个人热气球",
+      "description": "完美的单人冒险和短距离自由旅行。"
+    },
+    "cruiser": {
+      "title": "自由巡航飞艇",
+      "description": "半刚性飞艇，适合中程游牧生活方式。"
+    },
+    "explorer": {
+      "title": "世界探索者",
+      "description": "全功能飞艇，实现终极自由和世界旅行。"
+    },
+    "features": {
+      "basic_nav": "基础导航设备",
+      "local_exploration": "适合本地探索",
+      "extended_range": "扩展航程能力",
+      "basic_amenities": "基本生活设施",
+      "gps": "GPS导航系统",
+      "long_range": "长航程能力",
+      "full_quarters": "完整生活区",
+      "advanced_nav": "先进导航",
+      "solar_power": "太阳能供电系统"
+    },
+    "link_types": {
+      "dealer": "官方经销商",
+      "manufacturer": "制造商",
+      "marketplace": "交易市场",
+      "custom_builder": "定制建造商",
+      "kit_supplier": "套件供应商"
+    }
   }
 }

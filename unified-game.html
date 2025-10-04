@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Airship Freedom: The Adventure</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .game-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Game Header */
+        .game-header {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .player-status {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.1em;
+        }
+
+        .bitcoin-amount { color: #f7931a; font-weight: bold; }
+        .cash-amount { color: #4caf50; font-weight: bold; }
+        .adventure-points { color: #ffd700; font-weight: bold; }
+
+        .game-title {
+            text-align: center;
+            font-size: 2.2em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .airship-status {
+            text-align: right;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .current-airship {
+            font-size: 3em;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        /* Story Interface */
+        .story-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .location-banner {
+            text-align: center;
+            background: rgba(76, 175, 80, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            border: 2px solid #4caf50;
+        }
+
+        .location-name {
+            font-size: 1.8em;
+            color: #4caf50;
+            margin-bottom: 5px;
+        }
+
+        .location-cost {
+            color: #bdc3c7;
+            font-size: 1.1em;
+        }
+
+        .story-text {
+            font-size: 1.2em;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #ffd700;
+        }
+
+        /* Decision System */
+        .decisions-container {
+            display: grid;
+            gap: 15px;
+        }
+
+        .decision-option {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .decision-option:hover {
+            border-color: #4caf50;
+            background: rgba(76, 175, 80, 0.1);
+            transform: translateX(5px);
+        }
+
+        .decision-option.risky {
+            border-color: rgba(231, 76, 60, 0.5);
+        }
+
+        .decision-option.risky:hover {
+            border-color: #e74c3c;
+            background: rgba(231, 76, 60, 0.1);
+        }
+
+        .decision-option.safe {
+            border-color: rgba(39, 174, 96, 0.5);
+        }
+
+        .decision-option.safe:hover {
+            border-color: #27ae60;
+            background: rgba(39, 174, 96, 0.1);
+        }
+
+        .decision-title {
+            font-size: 1.3em;
+            color: #ffd700;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .decision-description {
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .decision-consequences {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            font-size: 0.9em;
+        }
+
+        .consequence {
+            padding: 5px 10px;
+            border-radius: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .consequence.positive { background: rgba(39, 174, 96, 0.3); color: #27ae60; }
+        .consequence.negative { background: rgba(231, 76, 60, 0.3); color: #e74c3c; }
+        .consequence.neutral { background: rgba(241, 196, 15, 0.3); color: #f1c40f; }
+
+        /* Progress Tracking */
+        .progress-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .progress-title {
+            text-align: center;
+            font-size: 1.5em;
+            color: #ffd700;
+            margin-bottom: 20px;
+        }
+
+        .airship-progression {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .airship-tier {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            opacity: 0.5;
+        }
+
+        .airship-tier.current {
+            border-color: #4caf50;
+            opacity: 1;
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
+        }
+
+        .airship-tier.unlocked {
+            opacity: 0.8;
+            border-color: #ffd700;
+        }
+
+        .tier-icon {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .tier-name {
+            color: #ffd700;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .tier-requirement {
+            font-size: 0.9em;
+            color: #bdc3c7;
+        }
+
+        /* Animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .decision-option:hover .decision-title {
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .game-header {
+                grid-template-columns: 1fr;
+                text-align: center;
+                gap: 15px;
+            }
+
+            .player-status,
+            .airship-status {
+                justify-self: center;
+            }
+
+            .story-text {
+                font-size: 1.1em;
+            }
+
+            .decision-consequences {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- Game Header -->
+        <header class="game-header">
+            <div class="player-status">
+                <div class="status-item">
+                    <span>₿</span>
+                    <span class="bitcoin-amount" id="bitcoinAmount">0.15</span>
+                </div>
+                <div class="status-item">
+                    <span>💵</span>
+                    <span class="cash-amount" id="cashAmount">$1,200</span>
+                </div>
+                <div class="status-item">
+                    <span>⭐</span>
+                    <span class="adventure-points" id="adventurePoints">45</span>
+                </div>
+            </div>
+
+            <h1 class="game-title">Airship Freedom Adventure</h1>
+
+            <div class="airship-status">
+                <div class="current-airship" id="currentAirship">🎈</div>
+                <div style="font-size: 0.9em; color: #bdc3c7;">Nomad Balloon</div>
+            </div>
+        </header>
+
+        <!-- Story Interface -->
+        <main class="story-container">
+            <div class="location-banner">
+                <div class="location-name" id="currentLocation">Bangkok, Thailand</div>
+                <div class="location-cost" id="locationCost">$800/month living cost</div>
+            </div>
+
+            <div class="story-text" id="storyText">
+                Your laptop just died in a Bangkok co-working space. Without it, your freelance income drops to zero. You need a new one to continue your journey, but you're already stretched thin on your nomad budget.
+
+                The laptop costs $800 - exactly what you spend per month living here. How you handle this crisis will determine whether you level up or fall back in your airship adventure.
+            </div>
+
+            <div class="decisions-container" id="decisionsContainer">
+                <!-- Decisions will be populated by JavaScript -->
+            </div>
+        </main>
+
+        <!-- Progress Tracking -->
+        <section class="progress-container">
+            <h3 class="progress-title">🛸 Your Airship Journey</h3>
+            <div class="airship-progression">
+                <div class="airship-tier current">
+                    <div class="tier-icon">🎈</div>
+                    <div class="tier-name">Nomad Balloon</div>
+                    <div class="tier-requirement">Current Vehicle</div>
+                </div>
+                <div class="airship-tier">
+                    <div class="tier-icon">🚁</div>
+                    <div class="tier-name">Freedom Cruiser</div>
+                    <div class="tier-requirement">Need $3,000</div>
+                </div>
+                <div class="airship-tier">
+                    <div class="tier-icon">✈️</div>
+                    <div class="tier-name">Sky Empire</div>
+                    <div class="tier-requirement">Need $15,000</div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="unified-game-engine.js"></script>
+</body>
+</html>

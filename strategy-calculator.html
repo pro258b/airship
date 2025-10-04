@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Airship Financial Strategy Calculator</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: #ecf0f1;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(44, 62, 80, 0.9);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #f39c12;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #bdc3c7;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+
+        .input-section {
+            background: rgba(52, 73, 94, 0.7);
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .input-field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            color: #f39c12;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input {
+            padding: 12px;
+            border: 2px solid #34495e;
+            border-radius: 5px;
+            background: #2c3e50;
+            color: #ecf0f1;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #f39c12;
+        }
+
+        .calculate-btn {
+            background: linear-gradient(45deg, #e74c3c, #f39c12);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: block;
+            margin: 20px auto;
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+        }
+
+        .results {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .strategy-card {
+            background: rgba(52, 73, 94, 0.8);
+            border-radius: 10px;
+            padding: 25px;
+            border-left: 5px solid;
+        }
+
+        .usdt-card {
+            border-left-color: #27ae60;
+        }
+
+        .btc-card {
+            border-left-color: #f39c12;
+        }
+
+        .comparison-card {
+            border-left-color: #e74c3c;
+            grid-column: 1 / -1;
+        }
+
+        .strategy-title {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            color: #f39c12;
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(189, 195, 199, 0.2);
+        }
+
+        .metric-label {
+            color: #bdc3c7;
+        }
+
+        .metric-value {
+            color: #ecf0f1;
+            font-weight: bold;
+        }
+
+        .positive { color: #27ae60; }
+        .negative { color: #e74c3c; }
+        .neutral { color: #f39c12; }
+
+        .risk-indicator {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .risk-low { background: #27ae60; color: white; }
+        .risk-high { background: #e74c3c; color: white; }
+
+        .airship-icon {
+            text-align: center;
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .input-group {
+                grid-template-columns: 1fr;
+            }
+
+            .results {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="airship-icon">🛸</div>
+        <h1>Financial Strategy</h1>
+        <p class="subtitle">Spending/Saving Arbitrage Ledn.io Style Comparison</p>
+
+        <div class="input-section">
+            <div class="input-group">
+                <div class="input-field">
+                    <label for="amount">Cash Amount Needed ($)</label>
+                    <input type="number" id="amount" value="2000" min="100" step="100">
+                </div>
+                <div class="input-field">
+                    <label for="timeframe">Time Period (months)</label>
+                    <input type="number" id="timeframe" value="12" min="1" max="60">
+                </div>
+                <div class="input-field">
+                    <label for="btcGainMin">BTC Gain Range (%) - Worst Case</label>
+                    <input type="number" id="btcGainMin" value="-30" min="-80" max="100" step="5">
+                </div>
+                <div class="input-field">
+                    <label for="btcGainMax">BTC Gain Range (%) - Best Case</label>
+                    <input type="number" id="btcGainMax" value="80" min="0" max="400" step="5">
+                </div>
+            </div>
+
+            <div class="btc-suggestions" id="btcSuggestions" style="margin-top: 20px; padding: 15px; background: rgba(241, 196, 15, 0.1); border-radius: 8px; border: 1px solid rgba(241, 196, 15, 0.3);">
+                <h4 style="color: #f39c12; margin-bottom: 10px;">📊 Historical BTC Projections</h4>
+                <div class="suggestion-buttons" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button type="button" onclick="applyBTCRange('conservative')" style="padding: 8px 12px; background: rgba(231, 76, 60, 0.2); border: 1px solid #e74c3c; color: #ecf0f1; border-radius: 4px; cursor: pointer; font-size: 0.9em;">
+                        🐻 Conservative
+                    </button>
+                    <button type="button" onclick="applyBTCRange('moderate')" style="padding: 8px 12px; background: rgba(241, 196, 15, 0.2); border: 1px solid #f1c40f; color: #ecf0f1; border-radius: 4px; cursor: pointer; font-size: 0.9em;">
+                        📊 Moderate
+                    </button>
+                    <button type="button" onclick="applyBTCRange('aggressive')" style="padding: 8px 12px; background: rgba(39, 174, 96, 0.2); border: 1px solid #27ae60; color: #ecf0f1; border-radius: 4px; cursor: pointer; font-size: 0.9em;">
+                        🚀 Aggressive
+                    </button>
+                </div>
+                <div id="suggestionText" style="margin-top: 10px; font-size: 0.9em; color: #bdc3c7;"></div>
+            </div>
+
+            <button class="calculate-btn" onclick="calculateStrategies()">🚀 Calculate Freedom Strategies</button>
+        </div>
+
+        <div id="results" class="results" style="display: none;"></div>
+    </div>
+
+    <script src="financial-strategies.js"></script>
+    <script src="btc-analyzer.js"></script>
+    <script>
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD'
+            }).format(amount);
+        }
+
+        function formatPercentage(rate) {
+            return (rate * 100).toFixed(2) + '%';
+        }
+
+        function getRiskClass(level) {
+            return level.toLowerCase() === 'low' ? 'risk-low' : 'risk-high';
+        }
+
+        function getValueClass(value) {
+            if (value > 0) return 'positive';
+            if (value < 0) return 'negative';
+            return 'neutral';
+        }
+
+        let btcAnalyzer;
+
+        function initializeBTCAnalyzer() {
+            btcAnalyzer = new window.BTCAnalyzer();
+            updateSuggestions();
+        }
+
+        function applyBTCRange(type) {
+            const timeframe = parseInt(document.getElementById('timeframe').value) || 12;
+            const ranges = btcAnalyzer.getRecommendedInputRanges(timeframe);
+
+            let selectedRange;
+            switch(type) {
+                case 'conservative':
+                    selectedRange = ranges.conservative;
+                    break;
+                case 'moderate':
+                    selectedRange = ranges.moderate;
+                    break;
+                case 'aggressive':
+                    selectedRange = ranges.aggressive;
+                    break;
+            }
+
+            document.getElementById('btcGainMin').value = Math.round(selectedRange.min * 100);
+            document.getElementById('btcGainMax').value = Math.round(selectedRange.max * 100);
+
+            updateSuggestions();
+            calculateStrategies();
+        }
+
+        function updateSuggestions() {
+            const timeframe = parseInt(document.getElementById('timeframe').value) || 12;
+            const ranges = btcAnalyzer.getRecommendedInputRanges(timeframe);
+
+            const suggestionText = document.getElementById('suggestionText');
+            suggestionText.innerHTML = `
+                Based on ${timeframe}-month historical analysis:<br>
+                🐻 Conservative: ${btcAnalyzer.formatRange(ranges.conservative.min, ranges.conservative.max)}<br>
+                📊 Moderate: ${btcAnalyzer.formatRange(ranges.moderate.min, ranges.moderate.max)}<br>
+                🚀 Aggressive: ${btcAnalyzer.formatRange(ranges.aggressive.min, ranges.aggressive.max)}
+            `;
+        }
+
+        function calculateStrategies() {
+            const amount = parseFloat(document.getElementById('amount').value);
+            const timeframe = parseInt(document.getElementById('timeframe').value);
+            const btcGainMin = parseFloat(document.getElementById('btcGainMin').value) / 100;
+            const btcGainMax = parseFloat(document.getElementById('btcGainMax').value) / 100;
+
+            const comparator = new window.FinancialStrategies.StrategyComparator();
+
+            // Calculate both best and worst case scenarios
+            const worstCase = comparator.compareScenarios(amount, timeframe, btcGainMin);
+            const bestCase = comparator.compareScenarios(amount, timeframe, btcGainMax);
+            const breakEven = comparator.calculateBreakEven(amount, timeframe);
+
+            displayResults({ worstCase, bestCase, btcRange: { min: btcGainMin, max: btcGainMax } }, breakEven);
+        }
+
+        function displayResults(scenarios, breakEven) {
+            const resultsDiv = document.getElementById('results');
+            const { worstCase, bestCase, btcRange } = scenarios;
+
+            const html = `
+                <div class="strategy-card usdt-card">
+                    <div class="strategy-title">💰 USDT Lending Strategy (Stable)</div>
+                    <div class="metric">
+                        <span class="metric-label">Principal:</span>
+                        <span class="metric-value">${formatCurrency(worstCase.usdtLending.principal)}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Annual Rate:</span>
+                        <span class="metric-value">8.5%</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Monthly Income:</span>
+                        <span class="metric-value ${getValueClass(worstCase.usdtLending.monthlyIncome)}">${formatCurrency(worstCase.usdtLending.monthlyIncome)}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Total Profit:</span>
+                        <span class="metric-value ${getValueClass(worstCase.usdtLending.profit)}">${formatCurrency(worstCase.usdtLending.profit)}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Risk Level:</span>
+                        <span class="risk-indicator ${getRiskClass(worstCase.usdtLending.riskLevel)}">${worstCase.usdtLending.riskLevel}</span>
+                    </div>
+                </div>
+
+                <div class="strategy-card btc-card">
+                    <div class="strategy-title">₿ BTC Collateral Strategy (Range)</div>
+                    <div class="metric">
+                        <span class="metric-label">BTC Range:</span>
+                        <span class="metric-value">${formatPercentage(btcRange.min)} to ${formatPercentage(btcRange.max)}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Cash Borrowed:</span>
+                        <span class="metric-value">${formatCurrency(worstCase.btcCollateral.cashBorrowed)}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">BTC Collateral Required:</span>
+                        <span class="metric-value">${formatCurrency(worstCase.btcCollateral.btcCollateralRequired)}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Total Interest Paid:</span>
+                        <span class="metric-value negative">${formatCurrency(worstCase.btcCollateral.totalInterestPaid)}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">BTC Gain (Worst Case):</span>
+                        <span class="metric-value ${getValueClass(worstCase.btcCollateral.btcAppreciationExpected)}">${formatCurrency(worstCase.btcCollateral.btcAppreciationExpected)}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">BTC Gain (Best Case):</span>
+                        <span class="metric-value ${getValueClass(bestCase.btcCollateral.btcAppreciationExpected)}">${formatCurrency(bestCase.btcCollateral.btcAppreciationExpected)}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Net Profit Range:</span>
+                        <span class="metric-value">
+                            <span class="${getValueClass(worstCase.btcCollateral.netProfit)}">${formatCurrency(worstCase.btcCollateral.netProfit)}</span> to
+                            <span class="${getValueClass(bestCase.btcCollateral.netProfit)}">${formatCurrency(bestCase.btcCollateral.netProfit)}</span>
+                        </span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Risk Level:</span>
+                        <span class="risk-indicator ${getRiskClass(worstCase.btcCollateral.riskLevel)}">${worstCase.btcCollateral.riskLevel}</span>
+                    </div>
+                </div>
+
+                <div class="strategy-card comparison-card">
+                    <div class="strategy-title">🏆 Strategy Range Analysis</div>
+                    <div class="metric">
+                        <span class="metric-label">USDT Lending Profit:</span>
+                        <span class="metric-value positive">${formatCurrency(worstCase.usdtLending.profit)}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">BTC Strategy (Worst Case):</span>
+                        <span class="metric-value ${getValueClass(worstCase.btcCollateral.netProfit)}">${formatCurrency(worstCase.btcCollateral.netProfit)}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">BTC Strategy (Best Case):</span>
+                        <span class="metric-value ${getValueClass(bestCase.btcCollateral.netProfit)}">${formatCurrency(bestCase.btcCollateral.netProfit)}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">BTC Break-even vs USDT:</span>
+                        <span class="metric-value">${formatPercentage(breakEven.breakEvenBTCGain)}</span>
+                    </div>
+
+                    <div style="margin-top: 20px;">
+                        <div style="padding: 15px; background: rgba(231, 76, 60, 0.1); border-radius: 5px; margin-bottom: 10px;">
+                            <strong>🐻 Worst Case Scenario:</strong><br>
+                            ${worstCase.btcCollateral.netProfit > worstCase.usdtLending.profit
+                                ? `Even in worst case, BTC strategy wins by ${formatCurrency(worstCase.btcCollateral.netProfit - worstCase.usdtLending.profit)}! 🚀`
+                                : `In worst case, USDT is safer by ${formatCurrency(worstCase.usdtLending.profit - worstCase.btcCollateral.netProfit)}. Consider risk tolerance! ⚠️`
+                            }
+                        </div>
+                        <div style="padding: 15px; background: rgba(39, 174, 96, 0.1); border-radius: 5px;">
+                            <strong>🚀 Best Case Scenario:</strong><br>
+                            BTC strategy could deliver ${formatCurrency(bestCase.btcCollateral.netProfit - worstCase.usdtLending.profit)} more than USDT!
+                            That's enough for ${Math.floor((bestCase.btcCollateral.netProfit - worstCase.usdtLending.profit) / 100)} days of freedom travel! 🌍
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            resultsDiv.innerHTML = html;
+            resultsDiv.style.display = 'grid';
+        }
+
+        // Initialize on page load
+        window.onload = function() {
+            initializeBTCAnalyzer();
+            calculateStrategies();
+        };
+
+        // Update suggestions when timeframe changes
+        document.addEventListener('DOMContentLoaded', function() {
+            const timeframeInput = document.getElementById('timeframe');
+            if (timeframeInput) {
+                timeframeInput.addEventListener('change', function() {
+                    if (btcAnalyzer) {
+                        updateSuggestions();
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

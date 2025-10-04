@@ -51,5 +51,40 @@
   },
   "design": {
     "link": "Design"
+  },
+  "resource": {
+    "link": "Get a real balloon (from $3000)"
+  },
+  "balloons": {
+    "personal": {
+      "title": "Personal Hot Air Balloon",
+      "description": "Perfect for solo adventures and short-distance freedom travel."
+    },
+    "cruiser": {
+      "title": "Freedom Cruiser Airship", 
+      "description": "Semi-rigid airship for medium-range nomadic lifestyle."
+    },
+    "explorer": {
+      "title": "World Explorer",
+      "description": "Full-featured airship for ultimate freedom and world travel."
+    },
+    "features": {
+      "basic_nav": "Basic navigation equipment",
+      "local_exploration": "Suitable for local exploration",
+      "extended_range": "Extended range capability", 
+      "basic_amenities": "Basic living amenities",
+      "gps": "GPS navigation system",
+      "long_range": "Long-range capability",
+      "full_quarters": "Full living quarters",
+      "advanced_nav": "Advanced navigation",
+      "solar_power": "Solar power system"
+    },
+    "link_types": {
+      "dealer": "Official Dealer",
+      "manufacturer": "Manufacturer",
+      "marketplace": "Marketplace",
+      "custom_builder": "Custom Builder",
+      "kit_supplier": "Kit Supplier"
+    }
   }
 }

@@ -38,6 +38,11 @@
 ## 游戏特色一：
 自由经济引擎：Lifestyle Arbitrage Simulator
 
+把类似AAVE,  coinrabbit和点对点的交易网站连起来，做中文界面- step 1- have a frame work to compare: lend growth account: USDT you get 8.5% interest. or collatera Btc and you pay 12.5% annual interest, so instead of spend $2000, I sell $4000 into bitcoin and get a loan of $2000, and pay monthly $30 interest, in the hope that after a year the bitcoin appreciate more than 30%
+
+ fundamental issue is that leverage (over-collateral loan) amplifies both gains and losses, and Bitcoin is already volatile enough without adding leverage. Your concern about missing future appreciation is valid, but the guaranteed cost of borrowing against a volatile asset has bankrupted many Bitcoin holders 
+The safest approach for hodler is usually to avoid any strategy that could force you to sell during unfavorable market conditions
+
 为什么容易实现：
 
 简单的计算器 / 比较界面 —— 不需要复杂3D建模
