@@ -1,0 +1,10 @@
+﻿{
+  "vault_addresses": [
+    "0xYourVaultProxyHere"
+  ],
+  "token_whitelist": [
+    "0xTokenAddress1",
+    "0xTokenAddress2"
+  ],
+  "min_transfer_raw": 0
+}
