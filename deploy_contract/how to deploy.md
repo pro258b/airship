@@ -1,6 +1,18 @@
+forta:
+pip install forta-agent # this is just sdk
+npx forta-agent@latest init --python
+
+the monitoring scripts is in airship\deploy_contracts\monitoring
+
+
+
+brownie pm install OpenZeppelin/openzeppelin-contracts@4.9.3
+
+brownie networks -list
+$ENV:NETWORK_PRIVATE_KEY = 
 brownie compile
 
-brownie run scripts/deploy.py --network rinkeby
+brownie run scripts/deploy.py --network arbitrum-main
 
 # can manually setup brownie-config.yaml in $HOME
 
@@ -19,7 +31,6 @@ Set the variable before running Brownie (Windows PowerShell): setx WEB3_INFURA_P
   provider that doesn’t need environment expansion.
 
 
-  brownie pm install OpenZeppelin/openzeppelin-contracts@4.9.3
 
   After running brownie pm
   install OpenZeppelin/openzeppelin-contracts@4.9.3, add or update brownie-config.yaml in your project root so the

@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>ProofOfPromise dApp</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.min.js" integrity="sha512-Jp3gC9h8XtY927w0CQpZgdKzac8AjtKoa6HgMHqmpYyqn1nVbWcv16O3MHuvb6jVWeItPxX2VINeodIZ6T7d1g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2rem; max-width: 1100px; }
+        h1, h2 { margin-bottom: 0.5rem; }
+        fieldset { border: 1px solid #ccc; padding: 1rem; margin-bottom: 1.5rem; }
+        legend { font-weight: bold; }
+        label { display: block; margin-top: 0.6rem; }
+        input[type="text"], input[type="number"], input[type="datetime-local"], textarea, select {
+            width: 100%; padding: 0.4rem; box-sizing: border-box;
+        }
+        textarea { min-height: 120px; }
+        button { margin-top: 0.8rem; padding: 0.6rem 1.2rem; cursor: pointer; }
+        .row { display: flex; flex-wrap: wrap; gap: 1rem; }
+        .col { flex: 1 1 260px; }
+        #status, .result { margin-top: 0.8rem; font-weight: bold; }
+        .note { color: #555; font-size: 0.9rem; }
+        .readonly { background: #f5f5f5; }
+    </style>
+</head>
+<body>
+    <h1>ProofOfPromise dApp</h1>
+    <p class="note">
+        Connect with a Web3 wallet (MetaMask, Rabby, etc.), set the deployed proxy address, then interact with the
+        core ProofOfPromise functions. Always verify parameters before sending live transactions.
+    </p>
+
+    <fieldset>
+        <legend>1. Wallet &amp; Contract</legend>
+        <button id="connect-btn" type="button">Connect Wallet</button>
+        <div id="wallet-address" class="result"></div>
+        <label>ProofOfPromise Proxy Address
+            <input type="text" id="contract-address" placeholder="0x..." />
+        </label>
+        <button id="load-contract" type="button">Load Contract</button>
+        <div id="contract-status" class="result"></div>
+        <div class="note">The ABI below is hard-coded for the ProofOfPromise implementation deployed through the transparent proxy.</div>
+    </fieldset>
+
+    <fieldset>
+        <legend>2. Contract Snapshot</legend>
+        <button id="refresh-info" type="button">Refresh Global Config</button>
+        <textarea id="contract-info" class="readonly" readonly></textarea>
+    </fieldset>
+
+    <fieldset>
+        <legend>3. Create Promise</legend>
+        <div class="row">
+            <div class="col">
+                <label>Counterparty Address
+                    <input type="text" id="create-counterparty" placeholder="0x... or 0x000" />
+                </label>
+                <label>Witness Address (optional)
+                    <input type="text" id="create-witness" placeholder="0x... or 0x000" />
+                </label>
+                <label>Asset Type
+                    <select id="create-asset-type">
+                        <option value="0">0 - Native</option>
+                        <option value="1">1 - ERC20</option>
+                    </select>
+                </label>
+                <label>Token Address (for ERC20)
+                    <input type="text" id="create-token" placeholder="0x..." />
+                </label>
+                <label>Amount (human units)
+                    <input type="text" id="create-amount" placeholder="e.g. 0.5" />
+                </label>
+                <label>Token Decimals (ERC20 only)
+                    <input type="number" id="create-decimals" value="18" />
+                </label>
+            </div>
+            <div class="col">
+                <label>Target Completion (UTC)
+                    <input type="datetime-local" id="create-target" />
+                </label>
+                <label>Breach Policy
+                    <select id="create-policy">
+                        <option value="0">0 - DelayRelease</option>
+                        <option value="1">1 - Burn</option>
+                        <option value="2">2 - Donate</option>
+                    </select>
+                </label>
+                <label>Yield Adapter Address (optional)
+                    <input type="text" id="create-adapter" placeholder="0x..." />
+                </label>
+                <label>Commitment Hash (bytes32)
+                    <input type="text" id="create-commitment" placeholder="0x..." />
+                </label>
+                <label>Counterparty Nonce
+                    <input type="number" id="create-counterparty-nonce" value="0" />
+                </label>
+                <label>Witness Nonce
+                    <input type="number" id="create-witness-nonce" value="0" />
+                </label>
+            </div>
+            <div class="col">
+                <label>Counterparty Signature (hex)
+                    <textarea id="create-counterparty-sig" placeholder="0x... signature"></textarea>
+                </label>
+                <label>Witness Signature (hex, optional)
+                    <textarea id="create-witness-sig" placeholder="0x..."></textarea>
+                </label>
+            </div>
+        </div>
+        <button id="create-btn" type="button">Create Promise</button>
+        <div id="create-status" class="result"></div>
+    </fieldset>
+
+    <fieldset>
+        <legend>4. Confirm Completion</legend>
+        <label>Promise ID
+            <input type="number" id="confirm-id" />
+        </label>
+        <label>Attestor Address
+            <input type="text" id="confirm-attestor" placeholder="0x..." />
+        </label>
+        <label>Attestor Nonce
+            <input type="number" id="confirm-nonce" />
+        </label>
+        <label>Attestor Signature (hex)
+            <textarea id="confirm-signature" placeholder="0x..."></textarea>
+        </label>
+        <button id="confirm-btn" type="button">Confirm Completion</button>
+        <div id="confirm-status" class="result"></div>
+    </fieldset>
+
+    <fieldset>
+        <legend>5. Breach &amp; Claim</legend>
+        <div class="row">
+            <div class="col">
+                <label>Promise ID (declare breach)
+                    <input type="number" id="breach-id" />
+                </label>
+                <button id="breach-btn" type="button">Declare Breach</button>
+            </div>
+            <div class="col">
+                <label>Promise ID (claim after delay)
+                    <input type="number" id="claim-id" />
+                </label>
+                <button id="claim-btn" type="button">Claim After Delay</button>
+            </div>
+        </div>
+        <div id="breach-status" class="result"></div>
+        <div id="claim-status" class="result"></div>
+    </fieldset>
+
+    <fieldset>
+        <legend>6. Read Helpers</legend>
+        <div class="row">
+            <div class="col">
+                <label>Promise ID
+                    <input type="number" id="read-id" />
+                </label>
+                <button id="read-btn" type="button">Get Promise</button>
+            </div>
+            <div class="col">
+                <label>Account Address for Nonce
+                    <input type="text" id="nonce-address" placeholder="0x..." />
+                </label>
+                <button id="nonce-btn" type="button">Get Nonce</button>
+            </div>
+        </div>
+        <textarea id="read-output" class="readonly" readonly></textarea>
+    </fieldset>
+
+    <div id="status"></div>
+
+    <script>
+        const abi = [
+            "function defaultDelaySeconds() view returns (uint256)",
+            "function maxDelaySeconds() view returns (uint256)",
+            "function treasury() view returns (address)",
+            "function nextPromiseId() view returns (uint256)",
+            "function nonces(address) view returns (uint256)",
+            "function getPromise(uint256) view returns (tuple(address,address,address,uint8,uint8,uint8,address,address,bytes32,uint256,uint256,uint256,uint256,uint256,uint256,uint256))",
+            "function createPromise((address,address,uint8,address,uint256,uint256,uint8,address,bytes32,uint256,uint256,bytes,bytes)) payable returns (uint256)",
+            "function confirmCompletion(uint256,address,uint256,bytes)",
+            "function declareBreach(uint256)",
+            "function claimAfterDelay(uint256)"
+        ];
+
+        let provider;
+        let signer;
+        let contract;
+
+        const statusBox = document.getElementById('status');
+
+        function setStatus(message) {
+            statusBox.textContent = message;
+        }
+
+        async function connectWallet() {
+            try {
+                if (!window.ethereum) {
+                    alert('Web3 wallet not detected. Install MetaMask or similar.');
+                    return;
+                }
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                await provider.send('eth_requestAccounts', []);
+                signer = provider.getSigner();
+                const address = await signer.getAddress();
+                document.getElementById('wallet-address').textContent = `Connected: ${address}`;
+                setStatus('Wallet connected.');
+            } catch (err) {
+                setStatus(`Connect failed: ${err.message}`);
+            }
+        }
+
+        async function loadContract() {
+            try {
+                if (!signer) {
+                    setStatus('Connect wallet first.');
+                    return;
+                }
+                const address = document.getElementById('contract-address').value.trim();
+                if (!ethers.utils.isAddress(address)) {
+                    setStatus('Invalid contract address.');
+                    return;
+                }
+                contract = new ethers.Contract(address, abi, signer);
+                document.getElementById('contract-status').textContent = `Contract loaded at ${address}`;
+                setStatus('Contract ready.');
+            } catch (err) {
+                setStatus(`Load failed: ${err.message}`);
+            }
+        }
+
+        const ZERO_ADDRESS = ethers.constants.AddressZero;
+
+        function normalizeAddress(value, allowZero = true) {
+            const trimmed = (value || "").trim();
+            if (!trimmed) {
+                if (allowZero) { return ZERO_ADDRESS; }
+                throw new Error("Address required");
+            }
+            if (trimmed === "0" || trimmed === "0x" || trimmed.toLowerCase() === "0x0") {
+                if (allowZero) { return ZERO_ADDRESS; }
+                throw new Error("Address required");
+            }
+            if (trimmed === ZERO_ADDRESS) {
+                return ZERO_ADDRESS;
+            }
+            if (!ethers.utils.isAddress(trimmed)) {
+                throw new Error(`Invalid address: ${value}`);
+            }
+            return trimmed;
+        }
+
+        function normalizeBytes32(value) {
+            const trimmed = (value || "").trim();
+            if (!trimmed) {
+                throw new Error("Commitment hash required");
+            }
+            const hex = trimmed.startsWith("0x") ? trimmed : `0x${trimmed}`;
+            if (!ethers.utils.isHexString(hex, 32)) {
+                throw new Error("Commitment hash must be 32-byte hex");
+            }
+            return hex;
+        }
+
+        function normalizeSignature(value, required = true) {
+            const trimmed = (value || "").trim();
+            if (!trimmed) {
+                if (required) {
+                    throw new Error("Signature required");
+                }
+                return "0x";
+            }
+            const hex = trimmed.startsWith("0x") ? trimmed : `0x${trimmed}`;
+            if (!ethers.utils.isHexString(hex)) {
+                throw new Error("Invalid signature hex");
+            }
+            return hex;
+        }
+        async function refreshInfo() {
+            try {
+                if (!contract) {
+                    setStatus('Load the contract first.');
+                    return;
+                }
+                const [defaultDelay, maxDelay, treasury, nextId] = await Promise.all([
+                    contract.defaultDelaySeconds(),
+                    contract.maxDelaySeconds(),
+                    contract.treasury(),
+                    contract.nextPromiseId()
+                ]);
+                const info = `defaultDelaySeconds: ${defaultDelay.toString()}\n` +
+                    `maxDelaySeconds: ${maxDelay.toString()}\n` +
+                    `treasury: ${treasury}\n` +
+                    `nextPromiseId: ${nextId.toString()}`;
+                document.getElementById('contract-info').value = info;
+                setStatus('Contract info refreshed.');
+            } catch (err) {
+                setStatus(`Info refresh failed: ${err.message}`);
+            }
+        }
+
+        function toTimestamp(dateInput) {
+            if (!dateInput) return 0;
+            const date = new Date(dateInput);
+            return Math.floor(date.getTime() / 1000);
+        }
+
+        async function createPromiseTx() {
+            try {
+                if (!contract) {
+                    setStatus('Load the contract first.');
+                    return;
+                }
+                const assetType = parseInt(document.getElementById('create-asset-type').value, 10);
+                const amountHuman = document.getElementById('create-amount').value.trim();
+                if (!amountHuman) {
+                    setStatus('Amount required.');
+                    return;
+                }
+                const decimals = parseInt(document.getElementById('create-decimals').value || '18', 10);
+                const amount = ethers.utils.parseUnits(amountHuman, decimals);
+                const targetTs = toTimestamp(document.getElementById('create-target').value);
+
+                if (!targetTs) {
+                    throw new Error('Target completion required');
+                }
+
+                const counterparty = normalizeAddress(document.getElementById('create-counterparty').value, true);
+                const witness = normalizeAddress(document.getElementById('create-witness').value, true);
+                const token = assetType === 0 ? ZERO_ADDRESS : normalizeAddress(document.getElementById('create-token').value, false);
+                const adapter = normalizeAddress(document.getElementById('create-adapter').value, true);
+                const commitmentHash = normalizeBytes32(document.getElementById('create-commitment').value);
+                const counterpartySig = counterparty === ZERO_ADDRESS
+                    ? '0x'
+                    : normalizeSignature(document.getElementById('create-counterparty-sig').value, true);
+                const witnessSig = witness === ZERO_ADDRESS
+                    ? '0x'
+                    : normalizeSignature(document.getElementById('create-witness-sig').value, false);
+
+                const params = {
+                    counterparty,
+                    witness,
+                    assetType,
+                    token,
+                    amount,
+                    targetCompletion: targetTs,
+                    breachPolicy: parseInt(document.getElementById('create-policy').value, 10),
+                    adapter,
+                    commitmentHash,
+                    counterpartyNonce: parseInt(document.getElementById('create-counterparty-nonce').value || '0', 10),
+                    witnessNonce: parseInt(document.getElementById('create-witness-nonce').value || '0', 10),
+                    counterpartySignature: counterpartySig,
+                    witnessSignature: witnessSig
+                };
+
+                const txOverrides = {};
+                if (assetType === 0) {
+                    txOverrides.value = amount;
+                }
+
+                const tx = await contract.createPromise(params, txOverrides);
+                document.getElementById('create-status').textContent = 'Waiting for confirmation...';
+                const receipt = await tx.wait();
+                const evt = receipt.events?.find((e) => e.event === 'PromiseCreated');
+                if (evt) {
+                    document.getElementById('create-status').textContent = `Promise created with ID ${evt.args.promiseId.toString()}`;
+                } else {
+                    document.getElementById('create-status').textContent = 'Transaction mined. Check events for PromiseCreated.';
+                }
+            } catch (err) {
+                document.getElementById('create-status').textContent = `Create failed: ${err.message}`;
+            }
+        }
+
+        async function confirmCompletionTx() {
+            try {
+                if (!contract) {
+                    throw new Error('Load the contract first');
+                }
+                const promiseId = parseInt(document.getElementById('confirm-id').value, 10);
+                const attestor = normalizeAddress(document.getElementById('confirm-attestor').value, false);
+                const nonce = parseInt(document.getElementById('confirm-nonce').value, 10);
+                const signature = normalizeSignature(document.getElementById('confirm-signature').value, true);
+                const tx = await contract.confirmCompletion(promiseId, attestor, nonce, signature);
+                document.getElementById('confirm-status').textContent = 'Waiting for confirmation...';
+                await tx.wait();
+                document.getElementById('confirm-status').textContent = 'Completion confirmed. Funds released.';
+            } catch (err) {
+                document.getElementById('confirm-status').textContent = `Confirm failed: ${err.message}`;
+            }
+        }
+
+        async function declareBreachTx() {
+            try {
+                const promiseId = parseInt(document.getElementById('breach-id').value, 10);
+                const tx = await contract.declareBreach(promiseId);
+                document.getElementById('breach-status').textContent = 'Waiting for confirmation...';
+                await tx.wait();
+                document.getElementById('breach-status').textContent = 'Breach declared.';
+            } catch (err) {
+                document.getElementById('breach-status').textContent = `Breach failed: ${err.message}`;
+            }
+        }
+
+        async function claimAfterDelayTx() {
+            try {
+                const promiseId = parseInt(document.getElementById('claim-id').value, 10);
+                const tx = await contract.claimAfterDelay(promiseId);
+                document.getElementById('claim-status').textContent = 'Waiting for confirmation...';
+                await tx.wait();
+                document.getElementById('claim-status').textContent = 'Funds claimed after delay.';
+            } catch (err) {
+                document.getElementById('claim-status').textContent = `Claim failed: ${err.message}`;
+            }
+        }
+
+        async function readPromise() {
+            try {
+                const promiseId = parseInt(document.getElementById('read-id').value, 10);
+                const promiseData = await contract.getPromise(promiseId);
+                document.getElementById('read-output').value = JSON.stringify(promiseData, null, 2);
+            } catch (err) {
+                document.getElementById('read-output').value = `Read failed: ${err.message}`;
+            }
+        }
+
+        async function readNonce() {
+            try {
+                const addr = document.getElementById('nonce-address').value.trim();
+                const nonce = await contract.nonces(addr);
+                document.getElementById('read-output').value = `${addr} nonce: ${nonce.toString()}`;
+            } catch (err) {
+                document.getElementById('read-output').value = `Nonce lookup failed: ${err.message}`;
+            }
+        }
+
+        document.getElementById('connect-btn').addEventListener('click', connectWallet);
+        document.getElementById('load-contract').addEventListener('click', loadContract);
+        document.getElementById('refresh-info').addEventListener('click', refreshInfo);
+        document.getElementById('create-btn').addEventListener('click', createPromiseTx);
+        document.getElementById('confirm-btn').addEventListener('click', confirmCompletionTx);
+        document.getElementById('breach-btn').addEventListener('click', declareBreachTx);
+        document.getElementById('claim-btn').addEventListener('click', claimAfterDelayTx);
+        document.getElementById('read-btn').addEventListener('click', readPromise);
+        document.getElementById('nonce-btn').addEventListener('click', readNonce);
+    </script>
+</body>
+</html>

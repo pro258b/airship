@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Dart vs Airship</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; background: #eef5ff; color: #0f172a; min-height: 100vh; }
+        .game { width: 420px; background: rgba(255,255,255,0.94); border-radius: 16px; box-shadow: 0 18px 40px rgba(15,23,42,0.18); padding: 24px; box-sizing: border-box; }
+        h1 { margin: 0 0 12px 0; font-size: 1.8rem; text-align: center; }
+        .playfield { position: relative; width: 100%; height: 220px; border-radius: 14px; border: 1px solid rgba(15,23,42,0.12); background: linear-gradient(180deg,#dbeafe 0%,#f8fafc 70%); overflow: hidden; }
+        .stone-display { position: absolute; top: 10px; left: 10px; display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; background: rgba(15,23,42,0.75); color: #f8fafc; font-size: 0.8rem; text-decoration: none; opacity: 0; pointer-events: none; transition: opacity 0.2s ease, transform 0.2s ease, background 0.2s ease; }
+        .stone-display.has-stones { opacity: 1; pointer-events: auto; }
+        .stone-display.reward-active { background: #0f766e; transform: scale(1.05); }
+        .stone-icon { width: 14px; height: 14px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #f8fafc 0%, #94a3b8 45%, #475569 100%); }
+        .airship-link { position: absolute; top: 60px; left: 0; width: 110px; height: 55px; display: block; transform: translateX(0); pointer-events: none; }
+        .airship-link.reward-active { pointer-events: auto; cursor: pointer; }
+        .airship { width: 100%; height: 100%; background: url("resources/airship.jpg") center/cover no-repeat; border-radius: 999px; box-shadow: 0 12px 24px rgba(30,64,175,0.35); }
+        .dart { position: absolute; left: 50%; bottom: 12px; width: 6px; height: 90px; background: linear-gradient(180deg,#1d4ed8 0%,#1e3a8a 100%); transform: translateX(-50%); }
+        .controls { margin-top: 20px; display: flex; flex-direction: column; gap: 14px; }
+        .row { display: flex; flex-direction: column; gap: 6px; }
+        input[type="range"], input[type="number"] { width: 100%; }
+        .buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+        button { padding: 10px 18px; border: none; border-radius: 999px; background: #2563eb; color: #fff; font-weight: 600; cursor: pointer; }
+        button:disabled { background: #93c5fd; cursor: not-allowed; }
+        .stats { display: flex; gap: 16px; justify-content: center; font-size: 0.85rem; }
+        .status { text-align: center; min-height: 1.2em; font-weight: 600; }
+        .status[data-tone="win"] { color: #047857; }
+        .status[data-tone="miss"] { color: #b91c1c; }
+    </style>
+</head>
+<body>
+    <div class="game">
+        <h1>Dart vs Airship</h1>
+        <div class="playfield" id="playfield">
+            <a href="shop.html" class="stone-display" id="stoneDisplay" title="Claim reward">
+                <span class="stone-icon" aria-hidden="true"></span>
+                <span id="stoneCount">0</span>
+            </a>
+            <a href="shop.html" class="airship-link" id="airshipLink" title="Claim reward">
+                <div class="airship" id="airship"></div>
+            </a>
+            <div class="dart" id="dart"></div>
+        </div>
+        <div class="controls">
+            <div class="row">
+                <label for="aimSlider">Aim column</label>
+                <input type="range" id="aimSlider" min="0" max="100" value="50">
+            </div>
+            <div class="row">
+                <label for="missLimit">God Hand miss limit</label>
+                <input type="number" id="missLimit" min="1" max="20" value="3">
+            </div>
+            <div class="buttons">
+                <button id="throwBtn" type="button">Throw Dart</button>
+                <button id="stoneBtn" type="button">Add Stone (slow airship)</button>
+            </div>
+            <div class="stats">
+                <span>Attempts: <strong id="attemptCount">0</strong></span>
+                <span>Wins: <strong id="winCount">0</strong></span>
+                <span>Misses: <strong id="missCount">0</strong></span>
+                <span>Speed: <strong id="speedReadout">160</strong></span>
+            </div>
+            <div class="status" id="status">Idle</div>
+        </div>
+    </div>
+    <script>
+        (function () {
+            const playfield = document.getElementById("playfield");
+            const airshipLink = document.getElementById("airshipLink");
+            const airship = document.getElementById("airship");
+            const dart = document.getElementById("dart");
+            const aimSlider = document.getElementById("aimSlider");
+            const throwBtn = document.getElementById("throwBtn");
+            const stoneBtn = document.getElementById("stoneBtn");
+            const missLimitInput = document.getElementById("missLimit");
+            const status = document.getElementById("status");
+            const attemptsOut = document.getElementById("attemptCount");
+            const winsOut = document.getElementById("winCount");
+            const missOut = document.getElementById("missCount");
+            const speedOut = document.getElementById("speedReadout");
+            const stoneDisplay = document.getElementById("stoneDisplay");
+            const stoneCountOut = document.getElementById("stoneCount");
+            let airshipX = 0;
+            let direction = 1;
+            let lastFrame = null;
+            const baseSpeed = 160;
+            const minSpeed = 60;
+            const speedStep = 20;
+            let currentSpeed = baseSpeed;
+            let dartActive = false;
+            let airshipCaptured = false;
+            let attempts = 0;
+            let wins = 0;
+            let misses = 0;
+            let stones = 0;
+            function setStatus(message, tone) {
+                status.textContent = message;
+                if (tone) { status.dataset.tone = tone; } else { delete status.dataset.tone; }
+            }
+            function updateSpeed() { speedOut.textContent = Math.round(currentSpeed).toString(); }
+            function updateMisses() { missOut.textContent = misses.toString(); }
+            function updateStones() {
+                stoneCountOut.textContent = stones.toString();
+                const reward = airshipCaptured;
+                stoneDisplay.classList.toggle("has-stones", stones > 0 || reward);
+                stoneDisplay.classList.toggle("reward-active", reward);
+                airshipLink.classList.toggle("reward-active", reward);
+            }
+            function updateDart() {
+                const percent = aimSlider.valueAsNumber / 100;
+                const bounds = playfield.getBoundingClientRect();
+                dart.style.left = (percent * 100) + "%";
+                return bounds.left + percent * bounds.width;
+            }
+            function missLimit() {
+                const raw = parseInt(missLimitInput.value, 10);
+                return Number.isFinite(raw) && raw > 0 ? Math.min(Math.max(raw, 1), 20) : 3;
+            }
+            function enforceLimit() {
+                missLimitInput.value = missLimit().toString();
+            }
+            function captureAirship() {
+                airshipCaptured = true;
+                currentSpeed = 0;
+                updateSpeed();
+                misses = 0;
+                updateMisses();
+                wins += 1;
+                winsOut.textContent = wins.toString();
+                throwBtn.disabled = true;
+                stoneBtn.disabled = true;
+                aimSlider.disabled = true;
+                missLimitInput.disabled = true;
+                updateStones();
+                setStatus("God Hand intervenes! Click the airship or stones to claim.", "win");
+            }
+            function addStone() {
+                if (airshipCaptured) {
+                    setStatus("Airship already secured. Claim reward via airship or counter.", "win");
+                    return;
+                }
+                const newSpeed = Math.max(minSpeed, currentSpeed - speedStep);
+                if (newSpeed === currentSpeed) {
+                    setStatus("Airship already at minimum speed.", null);
+                    return;
+                }
+                currentSpeed = newSpeed;
+                stones += 1;
+                updateSpeed();
+                updateStones();
+                setStatus("Stone added. Airship speed " + Math.round(currentSpeed) + ".", null);
+            }
+            function animate(timestamp) {
+                if (lastFrame === null) { lastFrame = timestamp; }
+                const delta = (timestamp - lastFrame) / 1000;
+                lastFrame = timestamp;
+                if (!airshipCaptured) {
+                    const bounds = playfield.getBoundingClientRect();
+                    const width = airshipLink.getBoundingClientRect().width;
+                    airshipX += direction * currentSpeed * delta;
+                    const maxX = Math.max(bounds.width - width, 0);
+                    if (airshipX <= 0) { airshipX = 0; direction = 1; }
+                    else if (airshipX >= maxX) { airshipX = maxX; direction = -1; }
+                    airshipLink.style.transform = "translateX(" + airshipX + "px)";
+                }
+                updateDart();
+                window.requestAnimationFrame(animate);
+            }
+            function throwDart() {
+                if (airshipCaptured || dartActive) {
+                    if (airshipCaptured) { setStatus("Airship already secured. Claim reward via airship or counter.", "win"); }
+                    return;
+                }
+                dartActive = true;
+                throwBtn.disabled = true;
+                attempts += 1;
+                attemptsOut.textContent = attempts.toString();
+                setStatus("Dart launched...", null);
+                const start = performance.now();
+                const flightMs = 600;
+                const travelHeight = playfield.offsetHeight - 40;
+                function frame(now) {
+                    const elapsed = now - start;
+                    const progress = Math.min(elapsed / flightMs, 1);
+                    const translateY = -progress * travelHeight;
+                    dart.style.height = 90 - translateY + "px";
+                    if (progress < 1) { requestAnimationFrame(frame); return; }
+                    const airshipBounds = airshipLink.getBoundingClientRect();
+                    const dartBounds = dart.getBoundingClientRect();
+                    const center = dartBounds.left + dartBounds.width / 2;
+                    const target = airshipBounds.left + airshipBounds.width / 2;
+                    const horizontal = Math.abs(center - target);
+                    const vertical = dartBounds.top <= airshipBounds.bottom && dartBounds.bottom >= airshipBounds.top;
+                    const hit = horizontal <= airshipBounds.width * 0.32 && vertical;
+                    if (hit) {
+                        wins += 1;
+                        winsOut.textContent = wins.toString();
+                        misses = 0;
+                        updateMisses();
+                        setStatus("Jackpot hit! Airship lottery unlocked.", "win");
+                    } else {
+                        misses += 1;
+                        updateMisses();
+                        if (misses >= missLimit()) {
+                            captureAirship();
+                        } else {
+                            setStatus("Missed the hull. Try again.", "miss");
+                        }
+                    }
+                    setTimeout(function () { dart.style.height = "90px"; }, 180);
+                    dartActive = false;
+                    throwBtn.disabled = airshipCaptured;
+                }
+                requestAnimationFrame(frame);
+            }
+            aimSlider.addEventListener("input", function () { if (!dartActive) { updateDart(); } });
+            stoneBtn.addEventListener("click", addStone);
+            throwBtn.addEventListener("click", throwDart);
+            missLimitInput.addEventListener("change", enforceLimit);
+            window.addEventListener("resize", function () { if (!dartActive) { updateDart(); } });
+            enforceLimit();
+            updateDart();
+            updateSpeed();
+            updateMisses();
+            updateStones();
+            requestAnimationFrame(animate);
+        }());
+    </script>
+</body>
+</html>

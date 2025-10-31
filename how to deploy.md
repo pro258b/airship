@@ -1,8 +1,13 @@
 brownie compile
-
-brownie run scripts/deploy.py --network rinkeby
+brownie test tests/test_proof_of_promise.py
+brownie run scripts/deploy.py --network bsc-main
+brownie run scripts/deploy_proof_of_promise.py --network bsc-main
 
 # can manually setup brownie-config.yaml
+
+## to do for loveslock contract
+
+ENV_PROXY_ADMIN
 
  - IFxMessageProcessor
 
@@ -18,6 +23,33 @@ Set the variable before running Brownie (Windows PowerShell): setx WEB3_INFURA_P
 
 
   brownie pm install OpenZeppelin/openzeppelin-contracts@4.9.3
+
+ Fit For Airship
+
+  - Forta bots watch chains continuously, emit structured alerts, and can trigger automation via webhooks. That
+  complements your Brownie scripts nicely: Forta spots an inbound Transfer and pings your infra; your own tooling
+  decides whether to call sweepToken or run transfer_token_from_vault.py.
+  - It’s realistic if you’re willing to deploy/host a Forta agent (either on Forta’s decentralized network or self-
+  hosted). You’ll need: a Forta agent container (from the repo), JSON-RPC access to BSC (if running privately), and
+  somewhere to forward alerts (REST endpoint, queue, etc.).
+  - Integration model:
+      1. Clone forta-bot-examples, copy filter-event-and-function-py.
+      2. Replace ABI/address filters with your vault proxy/token(s); emit an alert whenever to == vault and value
+  > 0.
+      3. Deploy the bot; configure Forta to hit a webhook you control.
+      4. Build a small listener (FastAPI, Lambda, etc.) that receives the alert payload and invokes a job runner
+  script which, in turn, calls brownie run ... transfer_token_from_vault.py --vault_address ... --token_address ...
+  --amount ... --auto_confirm True.
+      5. Guard with business logic (e.g., check allowlist/thresholds before sweeping).
+
+  Absorbing Industry-Grade Pieces
+
+  - Treat their code as a pattern: focus on how they parse logs, structure findings, and package bots. You can lift
+  the architecture while keeping your repo’s scripts independent.
+  - Keep your POC modular: keep Brownie deployment/sweep scripts in scripts/, add a new monitoring/forta_bot/
+  folder with adapted agent code and Dockerfile, plus a small glue service that bridges alerts to Brownie commands.
+  - Document operational runbooks: how to update the bot, redeploy, rotate keys, test locally.
+  - Start small (monitor only, no automatic sweep), then add automation once alert flow is stable.
 
   After running brownie pm
   install OpenZeppelin/openzeppelin-contracts@4.9.3, add or update brownie-config.yaml in your project root so the

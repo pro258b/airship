@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>ProofOfPromise Etherscan Verification Helper</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2rem; max-width: 960px; }
+        fieldset { margin-bottom: 1.5rem; padding: 1rem; }
+        label { display: block; margin-top: 0.5rem; }
+        textarea { width: 100%; min-height: 200px; }
+        input[type="text"], input[type="file"], select { width: 100%; padding: 0.4rem; }
+        button { margin-top: 1rem; padding: 0.6rem 1.2rem; cursor: pointer; }
+        .row { display: flex; gap: 1rem; flex-wrap: wrap; }
+        .row > div { flex: 1 1 280px; }
+        .note { font-size: 0.9rem; color: #555; }
+        #status { margin-top: 1rem; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>ProofOfPromise Etherscan Verification Helper</h1>
+    <p>
+        This page assembles a Standard-JSON input payload for the <code>ProofOfPromise</code>,
+        <code>ProofOfPromiseProxy</code>, and <code>IYieldAdapter</code> contracts. You can copy the
+        generated JSON into Etherscan&rsquo;s ?Verify &amp; Publish? form or submit the API request directly.
+    </p>
+
+    <fieldset>
+        <legend>1. Upload Solidity Sources</legend>
+        <p class="note">Select the three Solidity files exactly as deployed. The filenames become the keys in the Standard JSON.</p>
+        <label>ProofOfPromise.sol
+            <input type="file" id="file-logic" accept=".sol" />
+        </label>
+        <label>ProofOfPromiseProxy.sol
+            <input type="file" id="file-proxy" accept=".sol" />
+        </label>
+        <label>IYieldAdapter.sol
+            <input type="file" id="file-adapter" accept=".sol" />
+        </label>
+        <button id="build-json" type="button">Build Standard JSON</button>
+        <div id="build-warning" class="note"></div>
+    </fieldset>
+
+    <fieldset>
+        <legend>2. Compilation Settings</legend>
+        <div class="row">
+            <div>
+                <label>Compiler Version
+                    <input type="text" id="compiler-version" value="0.8.20" />
+                </label>
+            </div>
+            <div>
+                <label>Optimizer Runs
+                    <input type="text" id="optimizer-runs" value="200" />
+                </label>
+            </div>
+            <div>
+                <label>Via IR (true/false)
+                    <input type="text" id="via-ir" value="true" />
+                </label>
+            </div>
+        </div>
+        <div class="note">
+            Adjust only if your deployment used different settings. These defaults match the Brownie configuration in this repository.
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend>3. Generated Standard JSON</legend>
+        <textarea id="standard-json" placeholder="Click 'Build Standard JSON' after selecting files."></textarea>
+        <div class="note">Copy this block into Etherscan&rsquo;s ?Solidity (Standard-Json-Input)? field if you prefer manual submission.</div>
+    </fieldset>
+
+    <fieldset>
+        <legend>4. Optional: Submit via Etherscan API</legend>
+        <div class="note">Direct submissions require a valid API Key and may be blocked by CORS in some browsers. If the request fails, copy the JSON from step 3 into the web form instead.</div>
+        <div class="row">
+            <div>
+                <label>Contract Address
+                    <input type="text" id="contract-address" placeholder="0x..." />
+                </label>
+                <label>Contract Name (e.g. ProofOfPromise.sol:ProofOfPromise)
+                    <input type="text" id="contract-name" placeholder="ProofOfPromise.sol:ProofOfPromise" />
+                </label>
+            </div>
+            <div>
+                <label>Constructor Arguments (hex, optional)
+                    <input type="text" id="constructor-args" placeholder="000000..." />
+                </label>
+                <label>Etherscan API Key
+                    <input type="text" id="api-key" placeholder="Your API key" />
+                </label>
+                <label>Network
+                    <select id="network">
+                        <option value="https://api.etherscan.io/api">Ethereum Mainnet</option>
+                        <option value="https://api-sepolia.etherscan.io/api">Sepolia</option>
+                        <option value="https://api-holesky.etherscan.io/api">Holesky</option>
+                        <option value="https://api-optimistic.etherscan.io/api">Optimism</option>
+                        <option value="https://api.arbiscan.io/api">Arbitrum One</option>
+                        <option value="https://api-nova.arbiscan.io/api">Arbitrum Nova</option>
+                        <option value="https://api.basescan.org/api">Base</option>
+                        <option value="https://api.bscscan.com/api">BNB Smart Chain</option>
+                        <option value="https://api-testnet.bscscan.com/api">BNB Smart Chain Testnet</option>
+                        <option value="https://api.polygonscan.com/api">Polygon</option>
+                        <option value="https://api-amoy.polygonscan.com/api">Polygon Amoy</option>
+                        <option value="https://api.ftmscan.com/api">Fantom Opera</option>
+                        <option value="https://api.snowtrace.io/api">Avalanche C-Chain</option>
+                        <option value="https://api-testnet.snowtrace.io/api">Avalanche Fuji</option>
+                        <option value="https://api-goerli.etherscan.io/api">Goerli (legacy)</option>
+                    </select>
+                </label>
+            </div>
+        </div>
+        <button id="submit-etherscan" type="button">Submit Verification Request</button>
+        <div id="status"></div>
+    </fieldset>
+
+    <script>
+        function readFile(input) {
+            return new Promise((resolve, reject) => {
+                if (!input.files || !input.files.length) {
+                    resolve(null);
+                    return;
+                }
+                const file = input.files[0];
+                const reader = new FileReader();
+                reader.onload = () => resolve({ name: file.name, content: reader.result });
+                reader.onerror = () => reject(reader.error);
+                reader.readAsText(file);
+            });
+        }
+
+        document.getElementById('build-json').addEventListener('click', async () => {
+            const warningEl = document.getElementById('build-warning');
+            warningEl.textContent = '';
+            try {
+                const [logic, proxy, adapter] = await Promise.all([
+                    readFile(document.getElementById('file-logic')),
+                    readFile(document.getElementById('file-proxy')),
+                    readFile(document.getElementById('file-adapter')),
+                ]);
+
+                if (!logic || !proxy || !adapter) {
+                    warningEl.textContent = 'Please select all three Solidity files before building the JSON payload.';
+                    return;
+                }
+
+                const optimizerRuns = parseInt(document.getElementById('optimizer-runs').value || '200', 10);
+                const viaIR = (document.getElementById('via-ir').value || 'true').toLowerCase() === 'true';
+
+                const standardJson = {
+                    language: 'Solidity',
+                    sources: {
+                        [logic.name]: { content: logic.content },
+                        [proxy.name]: { content: proxy.content },
+                        [adapter.name]: { content: adapter.content },
+                    },
+                    settings: {
+                        optimizer: { enabled: true, runs: optimizerRuns },
+                        viaIR,
+                        outputSelection: {
+                            '*': {
+                                '*': ['abi', 'evm.bytecode', 'evm.deployedBytecode', 'metadata']
+                            }
+                        },
+                        remappings: [
+                            '@openzeppelin/contracts=OpenZeppelin/openzeppelin-contracts@4.9.3/contracts',
+                            '@openzeppelin/contracts-upgradeable=OpenZeppelin/openzeppelin-contracts-upgradeable@4.9.3/contracts'
+                        ]
+                    }
+                };
+
+                document.getElementById('standard-json').value = JSON.stringify(standardJson, null, 2);
+            } catch (error) {
+                warningEl.textContent = `Failed to build JSON: ${error}`;
+            }
+        });
+
+        document.getElementById('submit-etherscan').addEventListener('click', async () => {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = 'Submitting verification request...';
+
+            const apiUrl = document.getElementById('network').value;
+            const apiKey = document.getElementById('api-key').value.trim();
+            const contractAddress = document.getElementById('contract-address').value.trim();
+            const contractName = document.getElementById('contract-name').value.trim();
+            const constructorArgs = document.getElementById('constructor-args').value.trim();
+            const compilerVersion = document.getElementById('compiler-version').value.trim();
+            const standardJson = document.getElementById('standard-json').value.trim();
+
+            if (!apiKey || !contractAddress || !contractName || !standardJson) {
+                statusEl.textContent = 'API key, contract address, contract name, and Standard JSON are required.';
+                return;
+            }
+
+            const formData = new URLSearchParams();
+            formData.set('apikey', apiKey);
+            formData.set('module', 'contract');
+            formData.set('action', 'verifysourcecode');
+            formData.set('contractaddress', contractAddress);
+            formData.set('contractname', contractName);
+            formData.set('compilerversion', `v${compilerVersion}`);
+            formData.set('optimizationUsed', '1');
+            formData.set('runs', document.getElementById('optimizer-runs').value || '200');
+            formData.set('constructorArguements', constructorArgs); // Etherscan expects this typo
+            formData.set('evmversion', 'istanbul');
+            formData.set('licensetype', '1'); // SPDX MIT
+            formData.set('codeformat', 'standard-json-input');
+            formData.set('sourceCode', standardJson);
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formData.toString()
+                });
+
+                if (!response.ok) {
+                    statusEl.textContent = `HTTP error: ${response.status}`;
+                    return;
+                }
+
+                const data = await response.json();
+                statusEl.textContent = `Result: ${data.status} - ${data.message}`;
+                if (data.status === '1') {
+                    statusEl.textContent += ` (GUID: ${data.result})`;
+                } else {
+                    statusEl.textContent += ` (${data.result})`;
+                }
+            } catch (error) {
+                statusEl.textContent = `Request failed (likely CORS). Copy the JSON into Etherscan manually. Error: ${error}`;
+            }
+        });
+    </script>
+</body>
+</html>

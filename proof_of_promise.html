@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>ProofOfPromise Frontend</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f5f7fa;
+            color: #1f2933;
+        }
+        .pop-app {
+            max-width: 1080px;
+            margin: 0 auto;
+            padding: 32px 16px 64px;
+        }
+        .pop-header h1 {
+            margin: 0 0 0.5rem 0;
+            font-size: 2rem;
+            font-weight: 600;
+        }
+        .pop-header p {
+            margin: 0;
+            color: #4b5563;
+        }
+        .pop-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            margin-top: 24px;
+        }
+        .pop-card {
+            background: #ffffff;
+            border: 1px solid #d1d5db;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+        }
+        .pop-card h2 {
+            margin: 0 0 12px 0;
+            font-size: 1.25rem;
+        }
+        .pop-card p {
+            margin: 0 0 12px 0;
+            color: #556581;
+        }
+        .pop-field-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .pop-field {
+            flex: 1 1 260px;
+            display: flex;
+            flex-direction: column;
+        }
+        .pop-field label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #253041;
+        }
+        .pop-field input,
+        .pop-field select,
+        .pop-field textarea {
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 0.95rem;
+            background: #f8fafc;
+            color: #1f2933;
+        }
+        .pop-field textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        .pop-actions {
+            margin-top: 16px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        button {
+            border: none;
+            border-radius: 8px;
+            padding: 10px 18px;
+            background: #2563eb;
+            color: #ffffff;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        button:hover {
+            background: #1d4ed8;
+        }
+        button:disabled {
+            background: #93c5fd;
+            cursor: not-allowed;
+        }
+        .pop-inline-status {
+            margin-top: 12px;
+            font-size: 0.9rem;
+            color: #0f172a;
+            word-break: break-word;
+        }
+        .pop-inline-status[data-tone="error"] {
+            color: #b91c1c;
+        }
+        .pop-inline-status[data-tone="success"] {
+            color: #166534;
+        }
+        .pop-status {
+            margin-top: 32px;
+            border-radius: 10px;
+            padding: 14px 18px;
+            border: 1px solid #cbd5e1;
+            background: #e2e8f0;
+            font-weight: 600;
+            color: #1f2933;
+        }
+        .pop-status[data-tone="error"] {
+            border-color: #fca5a5;
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .pop-status[data-tone="success"] {
+            border-color: #86efac;
+            background: #dcfce7;
+            color: #14532d;
+        }
+        .pop-note {
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+        @media (max-width: 720px) {
+            .pop-card {
+                padding: 20px;
+            }
+            .pop-field {
+                flex: 1 1 100%;
+            }
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.min.js" integrity="sha512-Jp3gC9h8XtY927w0CQpZgdKzac8AjtKoa6HgMHqmpYyqn1nVbWcv16O3MHuvb6jVWeItPxX2VINeodIZ6T7d1g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script defer src="proof_of_promise.js"></script>
+</head>
+<body>
+    <div class="pop-app">
+        <header class="pop-header">
+            <h1>ProofOfPromise Frontend</h1>
+            <p>Manage promise creation, completion, breaches, and delayed claims through a browser wallet.</p>
+        </header>
+        <main class="pop-grid">
+            <section class="pop-card">
+                <h2>Wallet and Contract</h2>
+                <p class="pop-note">Connect a Web3 wallet, then point to the deployed proxy or implementation address.</p>
+                <div class="pop-actions">
+                    <button id="pop-connect-wallet" type="button">Connect Wallet</button>
+                    <div id="pop-wallet-address" class="pop-inline-status"></div>
+                </div>
+                <div class="pop-field-grid" style="margin-top: 16px;">
+                    <div class="pop-field">
+                        <label for="pop-contract-address">ProofOfPromise contract address</label>
+                        <input id="pop-contract-address" type="text" placeholder="0x..." autocomplete="off">
+                    </div>
+                </div>
+                <div class="pop-actions">
+                    <button id="pop-load-contract" type="button">Load Contract</button>
+                    <div id="pop-contract-status" class="pop-inline-status"></div>
+                </div>
+            </section>
+
+            <section class="pop-card">
+                <h2>Global Configuration</h2>
+                <p class="pop-note">Reads delay bounds, treasury destination, and the next promise id.</p>
+                <div class="pop-actions">
+                    <button id="pop-refresh-config" type="button">Refresh Config</button>
+                </div>
+                <div class="pop-field" style="margin-top: 16px;">
+                    <label for="pop-contract-info">Contract snapshot</label>
+                    <textarea id="pop-contract-info" readonly></textarea>
+                </div>
+            </section>
+
+            <section class="pop-card">
+                <h2>Create Promise</h2>
+                <form id="pop-create-form" autocomplete="off">
+                    <div class="pop-field-grid">
+                        <div class="pop-field">
+                            <label for="pop-create-counterparty">Counterparty address (optional)</label>
+                            <input id="pop-create-counterparty" type="text" placeholder="0x... or leave blank for none">
+                        </div>
+                        <div class="pop-field">
+                            <label for="pop-create-witness">Witness address (optional)</label>
+                            <input id="pop-create-witness" type="text" placeholder="0x... or leave blank for none">
+                        </div>
+                        <div class="pop-field">
+                            <label for="pop-create-asset-type">Asset type</label>
+                            <select id="pop-create-asset-type">
+                                <option value="0">0 - Native</option>
+                                <option value="1">1 - ERC20</option>
+                            </select>
+                        </div>
+                        <div class="pop-field">
+                            <label for="pop-create-token">ERC20 token address</label>
+                            <input id="pop-create-token" type="text" placeholder="0x...">
+                        </div>
+                        <div class="pop-field">
+                            <label for="pop-create-amount">Amount (human readable)</label>
+                            <input id="pop-create-amount" type="text" placeholder="0.00">
+                        </div>
+                        <div class="pop-field">
+                            <label for="pop-create-decimals">Token decimals</label>
+                            <input id="pop-create-decimals" type="number" value="18" min="0" max="77">
+                        </div>
+                        <div class="pop-field">
+                            <label for="pop-create-target">Target completion (UTC)</label>
+                            <input id="pop-create-target" type="datetime-local">
+                        </div>
+                        <div class="pop-field">
+                            <label for="pop-create-policy">Breach policy</label>
+                            <select id="pop-create-policy">
+                                <option value="0">0 - DelayRelease</option>
+                                <option value="1">1 - Burn</option>
+                                <option value="2">2 - Donate</option>
+                            </select>
+                        </div>
+                        <div class="pop-field">
+                            <label for="pop-create-adapter">Yield adapter address</label>
+                            <input id="pop-create-adapter" type="text" placeholder="0x... or leave blank">
+                        </div>
+                        <div class="pop-field">
+                            <label for="pop-create-commitment">Commitment hash (bytes32)</label>
+                            <input id="pop-create-commitment" type="text" placeholder="0x...">
+                        </div>
+                        <div class="pop-field">
+                            <label for="pop-create-counterparty-nonce">Counterparty nonce</label>
+                            <input id="pop-create-counterparty-nonce" type="number" min="0" step="1" value="0">
+                        </div>
+                        <div class="pop-field">
+                            <label for="pop-create-counterparty-sig">Counterparty signature (hex)</label>
+                            <textarea id="pop-create-counterparty-sig" placeholder="0x..."></textarea>
+                        </div>
+                        <div class="pop-field">
+                            <label for="pop-create-witness-nonce">Witness nonce</label>
+                            <input id="pop-create-witness-nonce" type="number" min="0" step="1" value="0">
+                        </div>
+                        <div class="pop-field">
+                            <label for="pop-create-witness-sig">Witness signature (hex)</label>
+                            <textarea id="pop-create-witness-sig" placeholder="0x..."></textarea>
+                        </div>
+                    </div>
+                    <div class="pop-actions">
+                        <button id="pop-create-submit" type="submit">Submit createPromise</button>
+                    </div>
+                    <div id="pop-create-status" class="pop-inline-status"></div>
+                </form>
+            </section>
+
+            <section class="pop-card">
+                <h2>Confirm Completion</h2>
+                <form id="pop-confirm-form" autocomplete="off">
+                    <div class="pop-field-grid">
+                        <div class="pop-field">
+                            <label for="pop-confirm-id">Promise id</label>
+                            <input id="pop-confirm-id" type="number" min="0" step="1">
+                        </div>
+                        <div class="pop-field">
+                            <label for="pop-confirm-attestor">Attestor address</label>
+                            <input id="pop-confirm-attestor" type="text" placeholder="0x...">
+                        </div>
+                        <div class="pop-field">
+                            <label for="pop-confirm-nonce">Attestor nonce</label>
+                            <input id="pop-confirm-nonce" type="number" min="0" step="1">
+                        </div>
+                        <div class="pop-field">
+                            <label for="pop-confirm-signature">Attestor signature</label>
+                            <textarea id="pop-confirm-signature" placeholder="0x..."></textarea>
+                        </div>
+                    </div>
+                    <div class="pop-actions">
+                        <button type="submit">Submit confirmCompletion</button>
+                    </div>
+                    <div id="pop-confirm-status" class="pop-inline-status"></div>
+                </form>
+            </section>
+
+            <section class="pop-card">
+                <h2>Breach and Delayed Claim</h2>
+                <div class="pop-field-grid">
+                    <form id="pop-breach-form" class="pop-field" autocomplete="off">
+                        <label for="pop-breach-id">Promise id</label>
+                        <input id="pop-breach-id" type="number" min="0" step="1">
+                        <div class="pop-actions" style="margin-top: 12px;">
+                            <button type="submit">Declare breach</button>
+                        </div>
+                        <div id="pop-breach-status" class="pop-inline-status"></div>
+                    </form>
+                    <form id="pop-claim-form" class="pop-field" autocomplete="off">
+                        <label for="pop-claim-id">Promise id</label>
+                        <input id="pop-claim-id" type="number" min="0" step="1">
+                        <div class="pop-actions" style="margin-top: 12px;">
+                            <button type="submit">Claim after delay</button>
+                        </div>
+                        <div id="pop-claim-status" class="pop-inline-status"></div>
+                    </form>
+                </div>
+            </section>
+
+            <section class="pop-card">
+                <h2>Read Helpers</h2>
+                <div class="pop-field-grid">
+                    <form id="pop-read-form" class="pop-field" autocomplete="off">
+                        <label for="pop-read-id">Promise id</label>
+                        <input id="pop-read-id" type="number" min="0" step="1">
+                        <div class="pop-actions" style="margin-top: 12px;">
+                            <button type="submit">Get promise</button>
+                        </div>
+                    </form>
+                    <form id="pop-nonce-form" class="pop-field" autocomplete="off">
+                        <label for="pop-nonce-address">Account address for nonce</label>
+                        <input id="pop-nonce-address" type="text" placeholder="0x...">
+                        <div class="pop-actions" style="margin-top: 12px;">
+                            <button type="submit">Get nonce</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="pop-field" style="margin-top: 16px;">
+                    <label for="pop-read-output">Readout</label>
+                    <textarea id="pop-read-output" readonly></textarea>
+                </div>
+            </section>
+        </main>
+        <div id="pop-status" class="pop-status" data-tone="info">Idle</div>
+    </div>
+</body>
+</html>

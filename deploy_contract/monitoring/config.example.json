@@ -1,0 +1,51 @@
+{
+  "vault_address": "$MONITOR_VAULT_ADDRESS",
+  "executor_address": "$MONITOR_EXECUTOR_ADDRESS",
+  "rpc": {
+    "http": "$MONITOR_RPC_HTTP",
+    "websocket": "$MONITOR_RPC_WS"
+  },
+  "tokens": [
+    {
+      "address": "$MONITOR_TOKEN_ADDRESS",
+      "symbol": "TOKEN",
+      "decimals": 18,
+      "threshold_bps": 1000,
+      "pools": [
+        {
+          "type": "uniswap_v3",
+          "address": "$MONITOR_POOL_TOKEN_USDC_V3",
+          "base_token": "$MONITOR_TOKEN_ADDRESS",
+          "quote_token": "$TOKEN_USDC",
+          "fee": 3000,
+          "twap_seconds": 300,
+          "metadata": {
+            "router": "$UNIV3_ROUTER",
+            "deadline_buffer": 600
+          }
+        },
+        {
+          "type": "uniswap_v2",
+          "address": "$MONITOR_POOL_TOKEN_USDT_V2",
+          "base_token": "$MONITOR_TOKEN_ADDRESS",
+          "quote_token": "$TOKEN_USDT",
+          "metadata": {
+            "router": "$UNIV2_ROUTER",
+            "path": [
+              "$MONITOR_TOKEN_ADDRESS",
+              "$TOKEN_USDT"
+            ],
+            "deadline_buffer": 600
+          }
+        }
+      ]
+    }
+  ],
+  "strategy": {
+    "sell_percentage": 5000,
+    "cooldown_seconds": 1800,
+    "default_slippage_bps": 75,
+    "default_threshold_bps": 1000,
+    "use_twap": true
+  }
+}
